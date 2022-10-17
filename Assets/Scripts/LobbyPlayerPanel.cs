@@ -10,10 +10,11 @@ public class LobbyPlayerPanel : MonoBehaviour
     [SerializeField] protected TMPro.TMP_Text txtName;
     [SerializeField] protected GameObject pnlColor;
     [SerializeField] protected TMPro.TMP_Text txtReady;
+    private bool isReady = false;
 
     public void Start()
     {
-        SetReady(false);
+        SetReady(isReady);
     }
 
     public void SetName(string newName) {
@@ -30,7 +31,8 @@ public class LobbyPlayerPanel : MonoBehaviour
 
     public void SetReady(bool ready)
     {
-        if (ready)
+        isReady = ready;
+        if (isReady)
         {
             txtReady.text = "Ready";
         }

@@ -14,6 +14,7 @@ public class LobbyManager : NetworkBehaviour
     public TMPro.TMP_Text txtPlayerNumber;
     public Button btnStart;
     public Player playerPrefab;
+    public Button btnReady;
 
     private NetworkList<PlayerInfo> allPlayers = new NetworkList<PlayerInfo>();
     private List<LobbyPlayerPanel> playerPanels = new List<LobbyPlayerPanel>();
@@ -44,14 +45,17 @@ public class LobbyManager : NetworkBehaviour
         {
             NetworkManager.Singleton.OnClientConnectedCallback += HostOnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += HostOnClientDisconnected;
+            btnReady.gameObject.SetActive(false);
+            btnReady.onClick.AddListener(ClientOnReadyClicked);
         }
 
         // Must be after, stuff be breaking
         base.OnNetworkSpawn();
 
-        if (IsClient)
+        if (IsClient && !IsHost)
         {
             allPlayers.OnListChanged += ClientOnAllPlayersChanged;
+            btnStart.gameObject.SetActive(false);
            
         }
         txtPlayerNumber.text = $"Player #{NetworkManager.LocalClientId}";
@@ -63,7 +67,7 @@ public class LobbyManager : NetworkBehaviour
 
     private void AddPlayerToList(ulong clientId)
     {
-        allPlayers.Add(new PlayerInfo(clientId, NextColor()));
+        allPlayers.Add(new PlayerInfo(clientId, NextColor(), false));
     }
 
     private void AddPlayerPanel(PlayerInfo info)
@@ -72,6 +76,7 @@ public class LobbyManager : NetworkBehaviour
         newPanel.transform.SetParent(playerScrollContent.transform, false);
         newPanel.SetName($"Player {info.clientId}");
         newPanel.SetColor(info.color);
+        newPanel.SetReady(info.isReady);
         playerPanels.Add(newPanel);
     }
 
@@ -124,6 +129,28 @@ public class LobbyManager : NetworkBehaviour
         return newColor;
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    public void ToggleReadyServerRpc(ServerRpcParams serverRpcParams = default)
+    {
+        ulong clientId = serverRpcParams.Receive.SenderClientId;
+        int playerIndex = FindPlayerIndex(clientId);
+        PlayerInfo info = allPlayers[playerIndex];
+
+        info.isReady = !info.isReady;
+        allPlayers[playerIndex] = info;
+
+        int readyCount = 0;
+        foreach (PlayerInfo readyInfo in allPlayers)
+        {
+            if (readyInfo.isReady)
+            {
+                readyCount += 1;
+            }
+        }
+
+        btnStart.enabled = readyCount == allPlayers.Count - 1;
+    }
+
     // -----------------------
     // Events
     // -----------------------
@@ -135,6 +162,7 @@ public class LobbyManager : NetworkBehaviour
 
     private void HostOnClientConnected(ulong clientId)
     {
+        btnStart.enabled = false;
         AddPlayerToList(clientId);
         RefreshPlayerPanels();
     }
@@ -147,5 +175,10 @@ public class LobbyManager : NetworkBehaviour
             RefreshPlayerPanels();
         }
 
+    }
+
+    private void ClientOnReadyClicked()
+    {
+        ToggleReadyServerRpc();
     }
 }
