@@ -16,8 +16,13 @@ public class LobbyManager : NetworkBehaviour
     public Player playerPrefab;
     public Button btnReady;
 
-    private NetworkList<PlayerInfo> allPlayers = new NetworkList<PlayerInfo>();
     private List<LobbyPlayerPanel> playerPanels = new List<LobbyPlayerPanel>();
+
+    private NetworkList<PlayerInfo> allPlayers;
+    public void Awake()
+    {
+        allPlayers = new NetworkList<PlayerInfo>();
+    }
 
     private Color[] playerColors = new Color[]
     {
@@ -56,7 +61,7 @@ public class LobbyManager : NetworkBehaviour
         {
             allPlayers.OnListChanged += ClientOnAllPlayersChanged;
             btnStart.gameObject.SetActive(false);
-           
+            btnReady.onClick.AddListener(ClientOnReadyClicked);
         }
         txtPlayerNumber.text = $"Player #{NetworkManager.LocalClientId}";
     }
@@ -138,6 +143,8 @@ public class LobbyManager : NetworkBehaviour
 
         info.isReady = !info.isReady;
         allPlayers[playerIndex] = info;
+
+        RefreshPlayerPanels();
 
         int readyCount = 0;
         foreach (PlayerInfo readyInfo in allPlayers)
