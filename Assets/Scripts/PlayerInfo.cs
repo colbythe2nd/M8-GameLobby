@@ -12,7 +12,6 @@ public struct PlayerInfo : INetworkSerializable, System.IEquatable<PlayerInfo> {
         clientId = id;
         color = c;
         isReady = ready;
-        
     }
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter {
