@@ -10,6 +10,11 @@ public class GameManager : NetworkBehaviour {
     private int spawnIndex = 0;
     private List<Vector3> availableSpawnPositions = new List<Vector3>();
 
+    private void Start()
+    {
+        GameData.dbgRun.StartGameWithSceneIfNotStarted();
+    }
+
     public void Awake()
     {
         refreshSpawnPoints();
@@ -19,7 +24,10 @@ public class GameManager : NetworkBehaviour {
     {
         if (IsHost)
         {
+            refreshSpawnPoints();
             SpawnPlayers();
+            NetworkManager.Singleton.OnClientDisconnectCallback += HostOnClientDisconnect;
+            NetworkManager.Singleton.OnClientConnectedCallback += HostOnClientConnected;
         }
     }
 

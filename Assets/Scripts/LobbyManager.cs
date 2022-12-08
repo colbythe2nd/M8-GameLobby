@@ -15,9 +15,11 @@ public class LobbyManager : NetworkBehaviour
     public Button btnStart;
     public Button btnReady;
     public LobbyPlayerPanel playerPanelPrefab;
+    public ChatUI chat;
 
     
     public void Awake() {
+        GameData.dbgRun.StartGameWithSceneIfNotStarted();
         playerPanels = new List<LobbyPlayerPanel>();
     }
 
