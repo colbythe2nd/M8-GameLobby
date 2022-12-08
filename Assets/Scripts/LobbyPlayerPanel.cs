@@ -10,12 +10,21 @@ public class LobbyPlayerPanel : MonoBehaviour
     [SerializeField] protected TMPro.TMP_Text txtName;
     [SerializeField] protected TMPro.TMP_Text txtReady;
     [SerializeField] protected GameObject pnlColor;
+    [SerializeField] public Button btnKick;
     private bool isReady = false;
+
+    public event Action OnKickPlayer;
 
     public void Start() {
         SetReady(isReady);
+        btnKick.onClick.AddListener(OnKickPlayerClicked);
     }
 
+    private void OnKickPlayerClicked()
+    {
+        Debug.Log($"Panel for {txtName.text} kick button pressed");
+        OnKickPlayer.Invoke();
+    }
     public void SetName(string newName) {
         txtName.text = newName;
     }
